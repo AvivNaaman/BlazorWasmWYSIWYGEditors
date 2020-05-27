@@ -1,0 +1,28 @@
+﻿@page "/CKEditor"
+@inject IJSRuntime jsRuntime
+@inject HttpClient http 
+    <EditForm Model="post" OnValidSubmit="ValidSubmit">
+        <DataAnnotationsValidator />
+        <InputTextArea id="editor" @bind-Value="post.HtmlBody"/>
+        <ValidationMessage For="@(() => post.HtmlBody)"></ValidationMessage>
+        <button class="btn btn-primary" type="submit">Send</button>
+    </EditForm>
+    @code {
+        private Post post { get; set; } = new Post();
+        protected override void OnAfterRender(bool firstRender)
+        {
+            base.OnAfterRender(firstRender);
+            if (firstRender)
+                jsRuntime.InvokeVoidAsync("startCKEditor");
+        }
+
+        class Post
+        {
+            public string HtmlBody { get; set; }
+        }
+        async Task ValidSubmit()
+        {
+            var p = await http.PostAsJsonAsync<Post>("https://postman-echo.com/post", post);
+            Console.WriteLine(p);
+        }
+    }
